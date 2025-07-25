@@ -14,19 +14,19 @@ pub struct AnalysisResults {
     pub unprotected_functions: FunctionCheck,
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize)]
 pub struct MitigationStatus {
     pub enabled: bool,
     pub note: Option<String>,
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize)]
 pub struct RelroStatus {
     pub status: String,
     pub note: Option<String>,
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize)]
 pub struct FunctionCheck {
     pub count: usize,
     pub symbols: Vec<String>,
@@ -61,6 +61,33 @@ impl Default for AnalysisResults {
                 count: 0,
                 symbols: vec![],
             },
+        }
+    }
+}
+
+impl Default for MitigationStatus {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            note: None,
+        }
+    }
+}
+
+impl Default for RelroStatus {
+    fn default() -> Self {
+        Self {
+            status: "None".to_string(),
+            note: None,
+        }
+    }
+}
+
+impl Default for FunctionCheck {
+    fn default() -> Self {
+        Self {
+            count: 0,
+            symbols: vec![],
         }
     }
 }
