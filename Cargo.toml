@@ -2,6 +2,13 @@
 name = "binhards"
 version = "0.1.0"
 edition = "2024"
+authors = ["Maulana Malik Ibrahim <ceo@ibrahimstudio.com>"]
+description = "A CLI tool to inspect compiled binaries (ELF, PE, Mach-O) for security mitigations and insecure patterns."
+homepage = "https://github.com/100percentibrahim/binhards"
+repository = "https://github.com/100percentibrahim/binhards"
+license = "MIT"
+keywords = ["security", "binary", "elf", "pe", "mach-o", "hardening", "cli"]
+categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
