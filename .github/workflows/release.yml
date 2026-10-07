@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Test
+        run: cargo test --locked --all-targets
+
+      - name: Verify tag matches package version
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          package_version="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json,sys; print(json.load(sys.stdin)["packages"][0]["version"])')"
+
+          echo "Git tag:       $tag_version"
+          echo "Package:       $package_version"
+
+          if [[ "$tag_version" != "$package_version" ]]; then
+            echo "ERROR: Git tag and Cargo package version do not match."
+            exit 1
+          fi
+
+      - name: Package
+        run: cargo package --locked
+
+      - name: Publish dry run
+        run: cargo publish --locked --dry-run
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: binhards-${{ github.ref_name }}
+          path: target/package/*.crate
+
+  release:
+    name: Create GitHub Release
+    needs: validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" --repo "${{ github.repository }}" --generate-notes
