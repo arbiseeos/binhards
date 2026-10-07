@@ -354,7 +354,7 @@ fn analyze_pe(
             if name.contains("_s") || name.contains("_chk") {
                 fortified_symbols.push(name.to_string());
             }
-            if dangerous_functions.contains(&name) {
+            if dangerous_functions.contains(name) {
                 unprotected_symbols.push(name.to_string());
             }
         }
