@@ -251,7 +251,7 @@ fn analyze_elf(
                 fortified_symbols.push(name.to_string());
             }
 
-            if dangerous_functions.contains(name) {
+            if dangerous_functions.contains(&name) {
                 unprotected_symbols.push(name.to_string());
             }
         }
