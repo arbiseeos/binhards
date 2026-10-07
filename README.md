@@ -137,11 +137,17 @@ Fortified Functions:
 
 ## Documentation
 
-Detailed documentation is available in the project repository:
+Project documentation:
 
 - [Technical Design](docs/DESIGN.md)
-- [Development Guide](docs/DEVELOPMENT.md)
-- [API Reference](docs/API.md)
+- [Contributing](CONTRIBUTING.md)
+- [Release Process](RELEASING.md)
+- [Changelog](CHANGELOG.md)
+
+Organization policies:
+
+- [Code of Conduct](https://github.com/arbiseeos/.github/blob/main/CODE_OF_CONDUCT.md)
+- [Security Policy](https://github.com/arbiseeos/.github/blob/main/SECURITY.md)
 
 For information on how security mitigations work, see:
 
@@ -152,7 +158,7 @@ For information on how security mitigations work, see:
 
 We welcome contributions from the community!
 
-- [CONTRIBUTING.md](https://github.com/arbiseeos/.github/blob/main/CONTRIBUTING.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
 - [CODE_OF_CONDUCT.md](https://github.com/arbiseeos/.github/blob/main/CODE_OF_CONDUCT.md)
 
 ### Development Setup
