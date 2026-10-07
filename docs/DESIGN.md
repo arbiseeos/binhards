@@ -16,11 +16,11 @@ src/main.rs defines the command-line interface with clap.
 
 The current arguments are:
 
-| Argument       | Description                                                       |
-| -------------- | ---------------------------------------------------------------- |
-| file           | Path to the binary to analyze.                                   |
-| --json, -j     | Emit the analysis result as pretty-printed JSON.                  |
-| --verbose, -v  | Print scanner and input-file information before analysis.         |
+| Argument      | Description                                               |
+| ------------- | --------------------------------------------------------- |
+| file          | Path to the binary to analyze.                            |
+| --json, -j    | Emit the analysis result as pretty-printed JSON.          |
+| --verbose, -v | Print scanner and input-file information before analysis. |
 
 The CLI calls analyze_binary() and then either serializes the result as JSON or renders a human-readable report.
 
