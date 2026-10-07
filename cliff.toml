@@ -29,9 +29,7 @@ footer = ""
 conventional_commits = true
 filter_unconventional = false
 split_commits = false
-commit_preprocessors = [
-  { pattern = "\\\\s+", replace = " " },
-]
+commit_preprocessors = [{ pattern = "\\\\s+", replace = " " }]
 commit_parsers = [
   { message = "^feat", group = "Features" },
   { message = "^fix", group = "Bug Fixes" },
