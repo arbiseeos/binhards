@@ -40,6 +40,14 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
+      - name: Check TOML formatting
+        run: |
+          cargo install taplo-cli --version 0.10.0 --locked
+          taplo fmt --check --diff
+
+      - name: Check Markdown, YAML, and JSON formatting
+        run: npx --yes prettier@3.9.9 --check "**/*.{md,yml,yaml,json,jsonc}"
+
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
