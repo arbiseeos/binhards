@@ -1,0 +1,9 @@
+# Generated/build artifacts
+target/
+Cargo.lock
+
+# Source/config formats owned by their native formatters
+**/*.rs
+**/*.c
+**/*.h
+**/*.sh
