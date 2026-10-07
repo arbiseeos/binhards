@@ -68,7 +68,7 @@ jobs:
         run: cargo publish --locked --dry-run
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: binhards-${{ github.ref_name }}
           path: target/package/*.crate
