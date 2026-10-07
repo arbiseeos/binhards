@@ -115,3 +115,32 @@ jobs:
 
           echo "=== Testing hardened binary ==="
           ./target/debug/binhards ./test_vuln_hardened
+
+
+  macho-fat:
+    name: Mach-O fat binary integration test
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build scanner
+        run: cargo build --locked
+
+      - name: Build universal test binary
+        run: |
+          cat > macho_test.c <<'EOF'
+          int main(void) {
+              return 0;
+          }
+          EOF
+          clang -arch x86_64 -arch arm64 -fPIE -pie -o macho_test macho_test.c
+          file macho_test
+          lipo -info macho_test
+
+      - name: Test Mach-O fat analysis
+        run: ./target/debug/binhards --json ./macho_test
