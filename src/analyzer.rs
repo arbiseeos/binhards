@@ -79,10 +79,10 @@ pub fn analyze_binary(
     _verbose: bool,
 ) -> Result<AnalysisResults, Box<dyn std::error::Error>> {
     let buffer =
-        fs::read(file_path).map_err(|e| format!("Failed to read file {}: {}", file_path, e))?;
+        fs::read(file_path).map_err(|e| format!("Failed to read file {file_path}: {e}"))?;
 
-    let object = Object::parse(&buffer)
-        .map_err(|e| format!("Failed to parse binary {}: {}", file_path, e))?;
+    let object =
+        Object::parse(&buffer).map_err(|e| format!("Failed to parse binary {file_path}: {e}"))?;
 
     let mut results = AnalysisResults {
         file_path: file_path.to_string(),
@@ -107,7 +107,7 @@ pub fn analyze_binary(
             analyze_macho_fat(&fat, &mut results)?;
         }
         _ => {
-            return Err(format!("Unsupported binary format for file: {}", file_path).into());
+            return Err(format!("Unsupported binary format for file: {file_path}").into());
         }
     }
 
@@ -421,7 +421,9 @@ fn analyze_macho_fat(
         .collect::<Vec<_>>()
         .join(", ");
 
-    results.nx.enabled = architecture_results.iter().all(|(_, result)| result.nx.enabled);
+    results.nx.enabled = architecture_results
+        .iter()
+        .all(|(_, result)| result.nx.enabled);
     results.nx.note = Some(format!(
         "Analyzed {} architectures ({}). NX is enabled across all architectures: {}.",
         architecture_results.len(),
@@ -429,7 +431,9 @@ fn analyze_macho_fat(
         results.nx.enabled
     ));
 
-    results.pie.enabled = architecture_results.iter().all(|(_, result)| result.pie.enabled);
+    results.pie.enabled = architecture_results
+        .iter()
+        .all(|(_, result)| result.pie.enabled);
     results.pie.note = Some(format!(
         "Analyzed {} architectures ({}). PIE is enabled across all architectures: {}.",
         architecture_results.len(),
@@ -473,8 +477,7 @@ fn analyze_macho_fat(
 
     if skipped_archives > 0 {
         let archive_note = format!(
-            " Skipped {} archive member(s), which are not executable Mach-O images.",
-            skipped_archives
+            " Skipped {skipped_archives} archive member(s), which are not executable Mach-O images.",
         );
         results.nx.note = Some(format!(
             "{}{}",

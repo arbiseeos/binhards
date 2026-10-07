@@ -116,7 +116,6 @@ jobs:
           echo "=== Testing hardened binary ==="
           ./target/debug/binhards ./test_vuln_hardened
 
-
   macho-fat:
     name: Mach-O fat binary integration test
     runs-on: macos-latest
