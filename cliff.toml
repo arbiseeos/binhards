@@ -1,0 +1,48 @@
+#:schema https://www.schemastore.org/git-cliff.json
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to BinHardS will be documented in this file.
+
+"""
+body = """
+{% if version %}
+## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}
+## Unreleased
+{% endif %}
+
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group }}
+
+{% for commit in commits %}
+- {{ commit.message | split(pat="\\n") | first | trim }}{% endfor %}
+
+{% endfor %}
+"""
+trim = true
+footer = ""
+
+[git]
+conventional_commits = true
+filter_unconventional = false
+split_commits = false
+commit_preprocessors = [
+  { pattern = "\\\\s+", replace = " " },
+]
+commit_parsers = [
+  { message = "^feat", group = "Features" },
+  { message = "^fix", group = "Bug Fixes" },
+  { message = "^perf", group = "Performance" },
+  { message = "^refactor", group = "Refactoring" },
+  { message = "^docs", group = "Documentation" },
+  { message = "^test", group = "Testing" },
+  { message = "^build", group = "Build" },
+  { message = "^ci", group = "CI" },
+  { message = "^chore", group = "Chores" },
+  { message = "^revert", group = "Reverts" },
+  { body = ".*security", group = "Security" },
+]
+sort_commits = "oldest"
