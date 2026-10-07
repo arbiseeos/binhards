@@ -1,6 +1,7 @@
 #:schema https://www.schemastore.org/git-cliff.json
 
 [changelog]
+format = true
 header = """
 # Changelog
 
