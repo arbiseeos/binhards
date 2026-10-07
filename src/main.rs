@@ -61,7 +61,7 @@ fn display_results(results: &AnalysisResults) {
         }
     );
     if let Some(ref note) = results.nx.note {
-        println!("    Note: {}", note);
+        println!("    Note: {note}");
     }
 
     println!(
@@ -73,7 +73,7 @@ fn display_results(results: &AnalysisResults) {
         }
     );
     if let Some(ref note) = results.pie.note {
-        println!("    Note: {}", note);
+        println!("    Note: {note}");
     }
 
     println!(
@@ -85,7 +85,7 @@ fn display_results(results: &AnalysisResults) {
         }
     );
     if let Some(ref note) = results.stack_canary.note {
-        println!("    Note: {}", note);
+        println!("    Note: {note}");
     }
 
     println!(
@@ -97,7 +97,7 @@ fn display_results(results: &AnalysisResults) {
         }
     );
     if let Some(ref note) = results.relro.note {
-        println!("    Note: {}", note);
+        println!("    Note: {note}");
     }
 
     // Display fortified functions check
@@ -124,7 +124,7 @@ fn display_results(results: &AnalysisResults) {
     if !results.unprotected_functions.symbols.is_empty() {
         println!("    Unprotected symbols found:");
         for symbol in &results.unprotected_functions.symbols {
-            println!("      - {}", symbol);
+            println!("      - {symbol}");
         }
     }
 }
