@@ -1,6 +1,6 @@
 # BinHardS - Binary Hardening Scanner
 
-[![CI](https://github.com/100percentibrahim/binhards/actions/workflows/ci.yml/badge.svg)](https://github.com/100percentibrahim/binhards/actions)
+[![CI](https://github.com/arbiseeos/binhards/actions/workflows/ci.yml/badge.svg)](https://github.com/arbiseeos/binhards/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A CLI tool to inspect compiled binaries (ELF, PE, Mach-O) for security mitigations and insecure patterns.
@@ -60,7 +60,7 @@ The scanner operates on the final compiled binary, making it language-agnostic a
 #### From Source
 
 ```bash
-git clone https://github.com/100percentibrahim/binhards.git
+git clone https://github.com/arbiseeos/binhards.git
 cd binhards
 cargo build --release
 ```
@@ -152,8 +152,8 @@ For information on how security mitigations work, see:
 
 We welcome contributions from the community!
 
-- [CONTRIBUTING.md](https://github.com/theIbrahimStudio/.github/blob/main/CONTRIBUTING.md)
-- [CODE_OF_CONDUCT.md](https://github.com/theIbrahimStudio/.github/blob/main/CODE_OF_CONDUCT.md)
+- [CONTRIBUTING.md](https://github.com/arbiseeos/.github/blob/main/CONTRIBUTING.md)
+- [CODE_OF_CONDUCT.md](https://github.com/arbiseeos/.github/blob/main/CODE_OF_CONDUCT.md)
 
 ### Development Setup
 
@@ -175,20 +175,20 @@ Planned enhancements:
 - Performance optimizations for large binary analysis
 - Integration with popular CI/CD platforms (GitHub Actions, GitLab CI, etc.)
 
-See [GitHub Issues](https://github.com/100percentibrahim/binhards/issues) for current development tasks and enhancements.
+See [GitHub Issues](https://github.com/arbiseeos/binhards/issues) for current development tasks and enhancements.
 
 ## Community & Support
 
-- Discussions: [GitHub Discussions](https://github.com/100percentibrahim/binhards/discussions)
-- Issues: [GitHub Issues](https://github.com/100percentibrahim/binhards/issues)
+- Discussions: [GitHub Discussions](https://github.com/arbiseeos/binhards/discussions)
+- Issues: [GitHub Issues](https://github.com/arbiseeos/binhards/issues)
 - For general questions, please use GitHub Discussions
 
 ## Security
 
-We take security seriously. If you discover a security vulnerability within this project, please follow our [Security Policy](https://github.com/theIbrahimStudio/.github/blob/main/SECURITY.md) to report it responsibly.
+We take security seriously. If you discover a security vulnerability within this project, please follow our [Security Policy](https://github.com/arbiseeos/.github/blob/main/SECURITY.md) to report it responsibly.
 
-- Please report security issues to: `hello@ibrahimstudio.com`
-- [SECURITY.md](https://github.com/theIbrahimStudio/.github/blob/main/SECURITY.md)
+- Please report security issues to: `security@os.arbisee.com`
+- [SECURITY.md](https://github.com/arbiseeos/.github/blob/main/SECURITY.md)
 
 ## License
 
