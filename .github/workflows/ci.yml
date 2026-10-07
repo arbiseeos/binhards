@@ -9,78 +9,95 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: read
+
 jobs:
-  build:
+  quality:
+    name: Format, lint, test, and package
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
+          components: rustfmt, clippy
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v3
+      - name: Cache Cargo
+        uses: actions/cache@v4
         with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-      - name: Cache Cargo index
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      - name: Check formatting
+        run: cargo fmt --all -- --check
 
-      - name: Cache Cargo build
-        uses: actions/cache@v3
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Build
-        run: cargo build --verbose
+        run: cargo build --locked --verbose
 
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test --locked --all-targets --verbose
+
+      - name: Validate package
+        run: cargo package --locked
+
+  scanner-self-test:
+    name: Scanner integration tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build scanner
+        run: cargo build --locked
 
       - name: Test on self
-        run: |
-          ./target/debug/binhards ./target/debug/binhards
+        run: ./target/debug/binhards ./target/debug/binhards
 
       - name: Test on system binaries
         run: |
           echo "=== Testing /bin/ls ==="
           ./target/debug/binhards /bin/ls
 
-          echo -e "\n=== Testing /bin/cat ==="
+          echo "=== Testing /bin/cat ==="
           ./target/debug/binhards /bin/cat
 
-          echo -e "\n=== Testing with JSON output ==="
+          echo "=== Testing JSON output ==="
           ./target/debug/binhards --json /bin/ls
 
       - name: Compile test binaries
         run: |
-          # Create a simple test C program
-          echo '#include <stdio.h>
+          cat > test_program.c <<'EOF'
+          #include <stdio.h>
           #include <string.h>
 
           int main(int argc, char *argv[]) {
               char buffer[100];
               if (argc > 1) {
                   strcpy(buffer, argv[1]); // Intentionally unsafe for testing
-                  printf("Input: %s\n", buffer);
+                  printf("Input: %s\\n", buffer);
               }
               return 0;
-          }' > test_program.c
+          }
+          EOF
 
-          # Compile with no security features
           gcc -o test_vuln_none test_program.c
-
-          # Compile with full hardening
           gcc -Wl,-z,relro,-z,now -fstack-protector-strong -fPIE -pie -D_FORTIFY_SOURCE=2 -O2 -o test_vuln_hardened test_program.c
 
       - name: Test on compiled binaries
@@ -88,5 +105,5 @@ jobs:
           echo "=== Testing vulnerable binary ==="
           ./target/debug/binhards ./test_vuln_none
 
-          echo -e "\n=== Testing hardened binary ==="
+          echo "=== Testing hardened binary ==="
           ./target/debug/binhards ./test_vuln_hardened
