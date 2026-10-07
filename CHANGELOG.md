@@ -2,13 +2,9 @@
 
 All notable changes to BinHardS will be documented in this file.
 
-
 ## [0.1.1] - 2026-10-07
 
-
-
 ### Bug Fixes
-
 
 - satisfy clippy lints
 - preserve elf symbol lookup types
@@ -19,9 +15,7 @@ All notable changes to BinHardS will be documented in this file.
 - analyze fat binary architectures (#1)
 - remove obsolete cargo-release config
 
-
 ### CI
-
 
 - modernize release readiness checks
 - add tag-driven release validation
@@ -31,9 +25,7 @@ All notable changes to BinHardS will be documented in this file.
 - configure automated explicit releases
 - configure changelog generation
 
-
 ### Chores
-
 
 - add .gitignore
 - update project metadata and ownership to ArbiSee
@@ -48,9 +40,7 @@ All notable changes to BinHardS will be documented in this file.
 - bump clap from 4.5.41 to 4.5.60
 - bump serde_json from 1.0.141 to 1.0.151
 
-
 ### Documentation
-
 
 - add contributor formatting guide
 - add changelog
@@ -60,22 +50,14 @@ All notable changes to BinHardS will be documented in this file.
 - format design document
 - fix formatting of command-line arguments section
 
-
 ### Refactoring
-
 
 - use interpolated strings for error messages and logging
 
-
 ### Testing
-
 
 - cover Mach-O fat binaries (#1)
 
-
 ### style
 
-
 - format release workflow with prettier
-
-
