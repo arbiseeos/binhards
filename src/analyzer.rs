@@ -14,7 +14,7 @@ pub struct AnalysisResults {
     pub unprotected_functions: FunctionCheck,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Default, Serialize)]
 pub struct MitigationStatus {
     pub enabled: bool,
     pub note: Option<String>,
@@ -26,7 +26,7 @@ pub struct RelroStatus {
     pub note: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Default, Serialize)]
 pub struct FunctionCheck {
     pub count: usize,
     pub symbols: Vec<String>,
@@ -65,29 +65,11 @@ impl Default for AnalysisResults {
     }
 }
 
-impl Default for MitigationStatus {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            note: None,
-        }
-    }
-}
-
 impl Default for RelroStatus {
     fn default() -> Self {
         Self {
             status: "None".to_string(),
             note: None,
-        }
-    }
-}
-
-impl Default for FunctionCheck {
-    fn default() -> Self {
-        Self {
-            count: 0,
-            symbols: vec![],
         }
     }
 }
@@ -212,13 +194,11 @@ fn analyze_elf(
         }
     }
 
-    if relro_partial {
-        if let Some(dynamic) = &elf.dynamic {
-            relro_full = dynamic
-                .dyns
-                .iter()
-                .any(|dyn_entry| dyn_entry.d_tag == goblin::elf::dynamic::DT_BIND_NOW);
-        }
+    if relro_partial && let Some(dynamic) = &elf.dynamic {
+        relro_full = dynamic
+            .dyns
+            .iter()
+            .any(|dyn_entry| dyn_entry.d_tag == goblin::elf::dynamic::DT_BIND_NOW);
     }
 
     results.relro.status = if relro_full {
@@ -271,7 +251,7 @@ fn analyze_elf(
                 fortified_symbols.push(name.to_string());
             }
 
-            if dangerous_functions.contains(&name) {
+            if dangerous_functions.contains(name) {
                 unprotected_symbols.push(name.to_string());
             }
         }
@@ -323,14 +303,13 @@ fn analyze_pe(
     let mut canary_symbols = Vec::new();
 
     for export in &pe.exports {
-        if let Some(ref name) = export.name {
-            if name.contains("__security_check_cookie")
+        if let Some(ref name) = export.name
+            && (name.contains("__security_check_cookie")
                 || name.contains("__security_cookie")
-                || name.contains("@__security_check_cookie@")
-            {
-                canary_found = true;
-                canary_symbols.push(name.to_string());
-            }
+                || name.contains("@__security_check_cookie@"))
+        {
+            canary_found = true;
+            canary_symbols.push(name.to_string());
         }
     }
 
@@ -430,16 +409,14 @@ fn analyze_macho(
     let mut canary_found = false;
     let mut canary_symbols = Vec::new();
 
-    for symbol_result in mach.symbols() {
-        if let Ok((name, _symbol)) = symbol_result {
-            if name.contains("__stack_chk_fail")
-                || name.contains("__stack_chk_guard")
-                || name.contains("___stack_chk_fail")
-                || name.contains("___stack_chk_guard")
-            {
-                canary_found = true;
-                canary_symbols.push(name.to_string());
-            }
+    for (name, _symbol) in mach.symbols().flatten() {
+        if name.contains("__stack_chk_fail")
+            || name.contains("__stack_chk_guard")
+            || name.contains("___stack_chk_fail")
+            || name.contains("___stack_chk_guard")
+        {
+            canary_found = true;
+            canary_symbols.push(name.to_string());
         }
     }
 
@@ -466,16 +443,14 @@ fn analyze_macho(
     let mut fortified_symbols = Vec::new();
     let mut unprotected_symbols = Vec::new();
 
-    for symbol_result in mach.symbols() {
-        if let Ok((name, _symbol)) = symbol_result {
-            if name.contains("_chk") || name.contains("__builtin___") {
-                fortified_symbols.push(name.to_string());
-            }
+    for (name, _symbol) in mach.symbols().flatten() {
+        if name.contains("_chk") || name.contains("__builtin___") {
+            fortified_symbols.push(name.to_string());
+        }
 
-            let clean_name = name.trim_start_matches('_');
-            if dangerous_functions.contains(&clean_name) {
-                unprotected_symbols.push(name.to_string());
-            }
+        let clean_name = name.trim_start_matches('_');
+        if dangerous_functions.contains(&clean_name) {
+            unprotected_symbols.push(name.to_string());
         }
     }
 
@@ -501,9 +476,9 @@ mod tests {
         let results = AnalysisResults::default();
         assert_eq!(results.file_path, "");
         assert_eq!(results.format, "");
-        assert_eq!(results.nx.enabled, false);
-        assert_eq!(results.pie.enabled, false);
-        assert_eq!(results.stack_canary.enabled, false);
+        assert!(!results.nx.enabled);
+        assert!(!results.pie.enabled);
+        assert!(!results.stack_canary.enabled);
         assert_eq!(results.relro.status, "None");
         assert_eq!(results.fortified_functions.count, 0);
         assert_eq!(results.unprotected_functions.count, 0);
@@ -519,7 +494,7 @@ mod tests {
     #[test]
     fn test_mitigation_status_default() {
         let ms = MitigationStatus::default();
-        assert_eq!(ms.enabled, false);
+        assert!(!ms.enabled);
         assert_eq!(ms.note, None);
     }
 
