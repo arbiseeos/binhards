@@ -1,4 +1,4 @@
-use goblin::Object;
+use goblin::{Object, mach::SingleArch};
 use serde::Serialize;
 use std::fs;
 
@@ -102,15 +102,9 @@ pub fn analyze_binary(
             results.format = "Mach-O".to_string();
             analyze_macho(&mach, &buffer, &mut results)?;
         }
-        Object::Mach(goblin::mach::Mach::Fat(_fat)) => {
+        Object::Mach(goblin::mach::Mach::Fat(fat)) => {
             results.format = "Mach-O Fat".to_string();
-            results.nx.note = Some(
-                "Fat binary detected. Analysis limited without specific architecture selection."
-                    .to_string(),
-            );
-            results.pie.note = Some("Fat binary detected.".to_string());
-            results.stack_canary.note = Some("Fat binary detected.".to_string());
-            results.relro.note = Some("Fat binary detected.".to_string());
+            analyze_macho_fat(&fat, &mut results)?;
         }
         _ => {
             return Err(format!("Unsupported binary format for file: {}", file_path).into());
@@ -382,6 +376,127 @@ fn analyze_pe(
         count: unprotected_symbols.len(),
         symbols: unprotected_symbols,
     };
+
+    Ok(())
+}
+
+fn analyze_macho_fat(
+    fat: &goblin::mach::MultiArch,
+    results: &mut AnalysisResults,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut architecture_results = Vec::new();
+    let mut skipped_archives = 0;
+
+    for entry in fat {
+        match entry {
+            Ok(SingleArch::MachO(mach)) => {
+                let mut architecture = AnalysisResults::default();
+                analyze_macho(&mach, &[], &mut architecture)?;
+
+                let name = goblin::mach::constants::cputype::get_arch_name_from_types(
+                    mach.header.cputype,
+                    mach.header.cpusubtype,
+                )
+                .map(str::to_string)
+                .unwrap_or_else(|| format!("cputype-{}", mach.header.cputype));
+
+                architecture_results.push((name, architecture));
+            }
+            Ok(SingleArch::Archive(_)) => {
+                skipped_archives += 1;
+            }
+            Err(error) => {
+                return Err(format!("Failed to parse Mach-O fat architecture: {error}").into());
+            }
+        }
+    }
+
+    if architecture_results.is_empty() {
+        return Err("Mach-O Fat binary contains no analyzable Mach-O architectures".into());
+    }
+
+    let architecture_names = architecture_results
+        .iter()
+        .map(|(name, _)| name.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    results.nx.enabled = architecture_results.iter().all(|(_, result)| result.nx.enabled);
+    results.nx.note = Some(format!(
+        "Analyzed {} architectures ({}). NX is enabled across all architectures: {}.",
+        architecture_results.len(),
+        architecture_names,
+        results.nx.enabled
+    ));
+
+    results.pie.enabled = architecture_results.iter().all(|(_, result)| result.pie.enabled);
+    results.pie.note = Some(format!(
+        "Analyzed {} architectures ({}). PIE is enabled across all architectures: {}.",
+        architecture_results.len(),
+        architecture_names,
+        results.pie.enabled
+    ));
+
+    results.stack_canary.enabled = architecture_results
+        .iter()
+        .all(|(_, result)| result.stack_canary.enabled);
+    results.stack_canary.note = Some(format!(
+        "Analyzed {} architectures ({}). Stack canaries are detected across all architectures: {}.",
+        architecture_results.len(),
+        architecture_names,
+        results.stack_canary.enabled
+    ));
+
+    results.relro.status = "N/A".to_string();
+    results.relro.note = Some(format!(
+        "RELRO is not applicable to Mach-O. Analyzed {} architectures ({}).",
+        architecture_results.len(),
+        architecture_names
+    ));
+
+    for (_, architecture) in &architecture_results {
+        for symbol in &architecture.fortified_functions.symbols {
+            if !results.fortified_functions.symbols.contains(symbol) {
+                results.fortified_functions.symbols.push(symbol.clone());
+            }
+        }
+
+        for symbol in &architecture.unprotected_functions.symbols {
+            if !results.unprotected_functions.symbols.contains(symbol) {
+                results.unprotected_functions.symbols.push(symbol.clone());
+            }
+        }
+    }
+
+    results.fortified_functions.count = results.fortified_functions.symbols.len();
+    results.unprotected_functions.count = results.unprotected_functions.symbols.len();
+
+    if skipped_archives > 0 {
+        let archive_note = format!(
+            " Skipped {} archive member(s), which are not executable Mach-O images.",
+            skipped_archives
+        );
+        results.nx.note = Some(format!(
+            "{}{}",
+            results.nx.note.as_deref().unwrap_or(""),
+            archive_note
+        ));
+        results.pie.note = Some(format!(
+            "{}{}",
+            results.pie.note.as_deref().unwrap_or(""),
+            archive_note
+        ));
+        results.stack_canary.note = Some(format!(
+            "{}{}",
+            results.stack_canary.note.as_deref().unwrap_or(""),
+            archive_note
+        ));
+        results.relro.note = Some(format!(
+            "{}{}",
+            results.relro.note.as_deref().unwrap_or(""),
+            archive_note
+        ));
+    }
 
     Ok(())
 }
